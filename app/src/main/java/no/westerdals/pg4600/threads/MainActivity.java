@@ -7,10 +7,14 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -29,11 +33,20 @@ public class MainActivity extends ListActivity {
         return new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, contacts);
     }
 
-    private void displayContacts(final String s) {
-        Log.d(TAG, s);
+    private void displayContacts(final List<Contact> contacts) {
+        Log.d(TAG, contacts.toString());
+        final List<String> contactsAsString = contactsToString(contacts);
+        setListAdapter(makeListAdapter(contactsAsString));
+    }
 
-        List<String> contacts = Arrays.asList(s.split("\\},"));
-        setListAdapter(makeListAdapter(contacts));
+    private List<String> contactsToString(final List<Contact> contacts) {
+        final List<String> strings = new ArrayList<>();
+
+        for (final Contact contact : contacts) {
+            strings.add(contact.toString());
+        }
+
+        return strings;
     }
 
     private void downloadContacts() {
@@ -57,10 +70,18 @@ public class MainActivity extends ListActivity {
             }
 
             @Override
-            protected void onPostExecute(final String s) {
-                super.onPostExecute(s);
-                displayContacts(s);
+            protected void onPostExecute(final String json) {
+                super.onPostExecute(json);
+
+                final List<Contact> contacts = contactsFromJson(json);
+                displayContacts(contacts);
             }
         }.execute();
+    }
+
+    private List<Contact> contactsFromJson(final String json) {
+        final Gson gson = new Gson();
+        final Type collectionType = new TypeToken<List<Contact>>(){}.getType();
+        return gson.fromJson(json, collectionType);
     }
 }
