@@ -49,6 +49,12 @@ public class MainActivity extends ListActivity {
         return strings;
     }
 
+    private List<Contact> contactsFromJson(final String json) {
+        final Gson gson = new Gson();
+        final Type collectionType = new TypeToken<List<Contact>>(){}.getType();
+        return gson.fromJson(json, collectionType);
+    }
+
     private void downloadContacts() {
         new AsyncTask<Void, Void, String>() {
             @Override
@@ -77,11 +83,5 @@ public class MainActivity extends ListActivity {
                 displayContacts(contacts);
             }
         }.execute();
-    }
-
-    private List<Contact> contactsFromJson(final String json) {
-        final Gson gson = new Gson();
-        final Type collectionType = new TypeToken<List<Contact>>(){}.getType();
-        return gson.fromJson(json, collectionType);
     }
 }
