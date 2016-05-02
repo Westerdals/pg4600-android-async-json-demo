@@ -1,6 +1,7 @@
 package no.westerdals.pg4600.threads;
 
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -57,8 +58,25 @@ public class MainActivity extends ListActivity {
 
     private void downloadContacts() {
         new AsyncTask<Void, Void, String>() {
+            private final ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                progressDialog.setMessage("Loading contacts");
+                progressDialog.show();
+            }
+
             @Override
             protected String doInBackground(final Void... params) {
+                try {
+                    // Sleep for a couple of seconds to demo the progress dialog on fast connections.
+                    // Can be safely removed!
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    Log.e("MainActivity", "Something went wrong while sleeping…", e);
+                }
+
                 try {
                     HttpURLConnection connection = (HttpURLConnection) new URL("http://contacts.theneva.com/contacts").openConnection();
                     Scanner scanner = new Scanner(connection.getInputStream());
@@ -78,6 +96,8 @@ public class MainActivity extends ListActivity {
             @Override
             protected void onPostExecute(final String json) {
                 super.onPostExecute(json);
+
+                progressDialog.cancel();
 
                 final List<Contact> contacts = contactsFromJson(json);
                 displayContacts(contacts);
